@@ -1,0 +1,27 @@
+server:
+  port: ${PORT_SERVER}
+---
+spring:
+  profiles: default
+  data:
+    mongodb:
+      uri: ${CONEXION_MONGO}/hondurasdb
+  servlet:
+      multipart:
+        enabled: true
+        max-request-size: 256MB
+        max-file-size: 256MB
+---
+springbootwebfluxjjwt:
+  password:
+    encoder:
+      secret: ${SECRET}
+      iteration: ${ITERATION}
+      keylength: ${KEY_LENGTH} 
+
+---
+storage:
+  volumenPath: ${VOLUMEN_PATH}
+---
+configuration:
+  privateKeyBackend: ${PRIVATE_KEY_BACKEND}
