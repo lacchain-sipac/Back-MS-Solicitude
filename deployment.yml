@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ms-solicitude-deployment
+  namespace: kube-honduras
+  labels:
+    app: ms-solicitude-honduras
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ms-solicitude-honduras
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: ms-solicitude-honduras
+    spec:
+      containers:
+        - env:
+            - name: CONEXION_MONGO
+              valueFrom:
+                secretKeyRef:
+                  name: secretsipac
+                  key: MONGO_CONNECTION
+            - name: PORT_SERVER
+              value: "8081"
+            - name: SECRET
+              value: "mysecret"
+            - name: ITERATION
+              value: "33"
+            - name: KEY_LENGTH
+              value: "256"
+            - name: MS-NOTIFY
+              value: http://ms-notify:8084
+            - name: MS-BLOCKCHAIN
+              value: http://ms-blockchain:8092
+            - name: MS-API-GATEWAY
+              value: http://ms-security:8090/
+            - name: VOLUMEN_PATH
+              value: /data/document
+            - name: PRIVATE_KEY_BACKEND
+              valueFrom:
+                secretKeyRef:
+                  name: secretsipac
+                  key: PRIVATE_KEY_BACKEND
+          image: {{DOCKER_IMAGE_TAG}}
+          name: ms-solicitude
+          # resources:
+          #   requests:
+          #     cpu: 120m
+          #     memory: 128Mi
+          #   limits:
+          #     cpu: 300m
+          #     memory: 256Mi
+          volumeMounts:
+            - mountPath: /data/document
+              name: honduras-solicitude-data
+      hostname: ms-solicitude
+      restartPolicy: Always
+      volumes:
+        - name: honduras-solicitude-data
+          persistentVolumeClaim:
+            claimName: honduras-solicitude-volume
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ms-solicitude
+  namespace: kube-honduras
+  labels:
+    app: ms-solicitude-honduras
+spec:
+  selector:
+    app: ms-solicitude-honduras
+  ports:
+    - protocol: TCP
+      port: 8081
+      targetPort: 8081
+      name: http
+  type: NodePort
